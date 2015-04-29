@@ -9,7 +9,7 @@ Collect debian packages with all dependencies (Debian, Ubuntu, LinuxMint, Elemen
 - python 2.7+ (3.x not supported)
 - perl
 - fakeroot
-
+- dpkg-repack
 
 
 
