@@ -2,7 +2,7 @@
 
 *ver0.1 dev*
 
-Collect debian packages with all dependencies (Debian, Ubuntu, LinuxMint, Elementary Os, Body ...)
+Collect debian packages with all dependencies (Debian, Ubuntu, LinuxMint, Elementary Os, Bodhi ...)
 
 ### Requirements
 
