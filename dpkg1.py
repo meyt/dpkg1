@@ -44,7 +44,7 @@ try:
 				if PKG_NAME in args.i:
 					PKG_PATH = os.path.join(OUTPUT_PATH, PKG_NAME+"_"+PKG_DIST+"_"+PKG_ARCH)
 					os.chdir(PKG_PATH)
-					os.system("dpkg -i *.deb")
+					os.system("dpkg -i -E -G *.deb")
 			except:
 				print 'ERROR:: Invalid directory name: '+directory
 			
