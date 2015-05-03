@@ -1,6 +1,6 @@
 # DPKG One
 
-*ver0.1.1 dev*
+*ver0.1.2 dev*
 
 Collect debian packages with all dependencies (Debian, Ubuntu, LinuxMint, Elementary Os, Bodhi ...)
 this tool help you to backup own already installed packages with all dependencies, 
@@ -10,10 +10,9 @@ Prefered to collect & install on the same distro (and version) with the same arc
 
 ### Requirements
 
-- python 2.7+ (3.x not supported)
+- python 2.7+
 - perl
 - fakeroot
-- dpkg-repack
 
 
 

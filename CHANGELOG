@@ -5,3 +5,7 @@
 0.1.1
 - add new options for escape to install same or new version already installed
 
+0.1.2
+- including dpkg-repack 
+- fix missing selected package to rebuild
+- add support for python 3.x
