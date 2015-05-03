@@ -20,16 +20,16 @@ Prefered to collect & install on the same distro (and version) with the same arc
 
 Collect:
 
-	python ./dpkg1.py -c package1,package2,package3,...
+	./dpkg1 -c package1 package2 package3,...
 	
 
-	python ./dpkg1.py -c vlc,cheese,gnome-system-monitor
+	./dpkg1 -c vlc cheese gnome-system-monitor
 
 
 Install:
 	
-	sudo python ./dpkg1.py -i package1,package2,package3,...
+	sudo ./dpkg1 -i package1 package2 package3,...
 
 
-	sudo python ./dpkg1.py -i vlc,cheese,gnome-system-monitor
+	sudo ./dpkg1 -i vlc cheese gnome-system-monitor
 
