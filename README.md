@@ -21,7 +21,7 @@ Extract archive and move into directory with `cd` command
 
 #### Collect:
 
-e.g: collecting vlc and cheese softwares.
+e.g: collecting `vlc` and `cheese` packages.
 
 	./dpkg1 -c vlc cheese
 
