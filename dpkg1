@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# DPKG1 , Collect debian packages with all dependencies
+# DPKG1 v0.2.0 , Collect debian packages with all dependencies
 # Author: Mahdi Ghane.G
 
-import os, sys, apt, argparse, platform,__future__
+import os, sys, apt, argparse, platform, subprocess, __future__
+
 try:
 	#~~~ Define global vars
 	THIS_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -29,13 +30,14 @@ try:
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-c', help='Collect packages', nargs='*')
 	parser.add_argument('-i', help='Install packages', nargs='*')
+	parser.add_argument('-r', help='Make repository catalog', nargs='*')
 	args = parser.parse_args()
 	
 	
 	
 	
 
-	#~~~ Install packages
+	#~~~ Install packages FIXME:: FOR TESTING
 	if not args.i==None:
 		
 		for directory in os.listdir(OUTPUT_PATH):
@@ -59,23 +61,67 @@ try:
 		PKG_DIST = platform.dist()[0]
 		for PKG_NAME in args.c:
 			### Check if package exits
-			if PKG_NAME in APT_CACHE:
+			splitted = PKG_NAME.split(':')
+			if len(splitted)>1:
+				PKG_NAME = splitted[0]
+				print("DPKG1:: explode package name `%s` " % PKG_NAME)
+		
+			if PKG_NAME in APT_CACHE and APT_CACHE[PKG_NAME].is_installed:
 				APT_PKG = APT_CACHE[PKG_NAME]
 				PKG_ARCH = APT_PKG.architecture()
-				PKG_PATH = os.path.join(OUTPUT_PATH, PKG_NAME+"_"+PKG_DIST+"_"+PKG_ARCH)
+				#PKG_PATH = os.path.join(OUTPUT_PATH, PKG_NAME+"_"+PKG_DIST+"_"+PKG_ARCH)
+				PKG_PATH = OUTPUT_PATH
 				if not os.path.exists(PKG_PATH):
 	    				os.makedirs(PKG_PATH)
 				os.chdir(PKG_PATH)
 	
 			
-				for item in APT_PKG.candidate.dependencies:
-					for x in item:
-						DEPENDS.append(x.name)
-						os.system("fakeroot -u "+DPKG_REPACK+" "+x.name)
-				os.system("fakeroot -u "+DPKG_REPACK+" "+PKG_NAME)
-
+				cmd = "dpkg -l " + PKG_NAME + " | grep '^ii' "
+				p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE);
+				path_output = p.stdout.read().strip().split('\n')[0].split()
+				dotdebname = path_output[1]+'_'+path_output[2]+'_'+path_output[3]
+				dotdebpath = PKG_PATH + '/' + dotdebname + '.deb'
+				if not os.path.exists(dotdebpath): # RePack if isnt packed already
+					for item in APT_PKG.candidate.dependencies:
+						for x in item:
+							cmd2 = "dpkg -l " + x.name + " | grep '^ii' "
+							p2 = subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE);
+							path_output2 = p2.stdout.read().strip().split('\n')[0].split()
+							
+							if len(path_output2)>2:  
+								splitted = path_output2[1].split(':')
+								if len(splitted)>1:
+									path_output2[1] = splitted[0]
+									print("DPKG1:: explode (dependency) package name `%s`" % path_output2[1] )
+								
+								dotdebname2 = path_output2[1]+'_'+path_output2[2]+'_'+path_output2[3]
+								dotdebpath2 = PKG_PATH + '/' + dotdebname2 + '.deb'
+								if not os.path.exists(dotdebpath2):
+									DEPENDS.append(x.name)
+									print("DPKG1:: repacking (dependency) `%s` ..." % x.name )
+									os.system("fakeroot -u "+DPKG_REPACK+" "+x.name)
+								else:
+									print("DPKG1:: ignore repacking, already exist's `%s`" % x.name )
+								
+					print("DPKG1:: repacking `%s` ..." % PKG_NAME )
+					os.system("fakeroot -u "+DPKG_REPACK+" "+PKG_NAME)
+				else:
+					print("DPKG1:: ignore repacking, already exist's `%s`" % PKG_NAME )
+				
 			else:
-				print('ERROR:: `%s` Not installed' %  PKG_NAME)
+				print('DPKG1::ERROR:: `%s` Not installed' %  PKG_NAME)
+
+
+	#~~~ Make repository
+	if not args.r==None:
+		
+		if 'dpkg-dev' in APT_CACHE and APT_CACHE['dpkg-dev'].is_installed:
+			if os.path.exists(OUTPUT_PATH):
+				os.chdir(OUTPUT_PATH)
+				os.system('dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz')
+				print('Repository catalog created, now append pkgs folder path as repository like this: [deb file:'+ OUTPUT_PATH +' ./] in the end of: /etc/apt/sources.list')
+		else:
+			print('`dpkg-dev` not installed [sudo apt-get install dpkg-dev]')
 
 
 
