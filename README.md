@@ -30,9 +30,9 @@ e.g: collecting `vlc` and `cheese` packages.
 
 	./dpkg1 -r
 
-Now you can add packages path as offline repository, modify and add this line in the end of `/etc/apt/sources.list`
+Now you can add packages path as offline repository, modify path and add this line in the end of `/etc/apt/sources.list` or create new file at `/etc/apt/sources.list.d/myrepository`
     
-	deb file:/home/user/dpkg1/pkgs
+	deb file:/home/user/dpkg1/pkgs ./
 
 
 then update repository list and install:
