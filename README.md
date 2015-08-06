@@ -13,7 +13,7 @@ Prefered to collect & install on the same distro (and version) with the same arc
 - python 2.7+
 - perl
 - fakeroot
-
+- dpkg-dev
 
 ### Usage
 
@@ -21,15 +21,9 @@ Extract archive and move into directory with `cd` command
 
 #### Collect:
 
-	// e.g: collecting vlc and cheese
+e.g: collecting vlc and cheese softwares.
+
 	./dpkg1 -c vlc cheese
-
-
-#### Force install (root access):
-
-	// e.g: isntall vlc and cheese
-	sudo ./dpkg1 -i vlc cheese
-
 
 
 #### Create repository catalog:
@@ -42,7 +36,6 @@ Now you can add packages path as offline repository, modify and add this line in
 
 
 then update repository list and install:
-
 
 	sudo apt-get update
 	sudo apt-get install vlc cheese 

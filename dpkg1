@@ -29,33 +29,11 @@ try:
 	#~~~ Define options
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-c', help='Collect packages', nargs='*')
-	parser.add_argument('-i', help='Install packages', nargs='*')
 	parser.add_argument('-r', help='Make repository catalog', nargs='*')
 	args = parser.parse_args()
 	
 	
 	
-	
-
-	#~~~ Install packages FIXME:: FOR TESTING
-	if not args.i==None:
-		
-		for directory in os.listdir(OUTPUT_PATH):
-			try:
-				PKG_NAME, PKG_DIST, PKG_ARCH = directory.split('_')
-			
-				if PKG_NAME in args.i:
-					PKG_PATH = os.path.join(OUTPUT_PATH, PKG_NAME+"_"+PKG_DIST+"_"+PKG_ARCH)
-					os.chdir(PKG_PATH)
-					os.system("dpkg -i -E -G *.deb")
-			except:
-				print("ERROR:: Invalid directory name: " + directory)
-			
-		
-
-
-
-
 	#~~~ Collect packages
 	if not args.c==None:
 		PKG_DIST = platform.dist()[0]
