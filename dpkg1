@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# DPKG1 v0.2.0 , Collect debian packages with all dependencies
+# DPKG1 v0.3.0 , Collect debian packages with all dependencies
 # Author: Mahdi Ghane.G
 
 import os, sys, apt, argparse, platform, subprocess, __future__
@@ -17,7 +17,7 @@ try:
 	PKG_DIST = None
 	DEPENDS = []
 	DPKG_REPACK = os.path.join(THIS_PATH, 'dpkg-repack')
-	
+	DEBFOSTER_PATH = os.path.join(THIS_PATH, 'debfoster')
 	
 	
 	#~~~ Make output folder
@@ -34,6 +34,38 @@ try:
 	
 	
 	
+
+	def get_pkg_fullname(pkg_name):
+		cmd2 = "dpkg -l " + pkg_name + " | grep '^ii' "
+		p2 = subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE);
+		path_output2 = p2.stdout.read().strip().split('\n')[0].split()
+		dotdebname2 = ''
+		if len(path_output2)>2:  
+			splitted = path_output2[1].split(':')
+			if len(splitted)>1:
+				path_output2[1] = splitted[0]
+
+			
+			splitted2 = path_output2[2].split(':')
+			if len(splitted2)>1:
+				path_output2[2] = splitted2[1]
+
+			
+			dotdebname2 = path_output2[1]+'_'+path_output2[2]+'_'+path_output2[3]
+		return dotdebname2
+
+	
+	
+	
+	def get_dependencies(pkg_name):
+		cmd2 = DEBFOSTER_PATH + " -q -d " + pkg_name 
+		p2 = subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE);
+		path_output2 = p2.stdout.read().split('\n', 1)[-1] # remove first line
+		path_output2 = path_output2.strip().replace('\n','').split(' ')
+		return path_output2
+		
+		
+
 	#~~~ Collect packages
 	if not args.c==None:
 		PKG_DIST = platform.dist()[0]
@@ -47,47 +79,47 @@ try:
 			if PKG_NAME in APT_CACHE and APT_CACHE[PKG_NAME].is_installed:
 				APT_PKG = APT_CACHE[PKG_NAME]
 				PKG_ARCH = APT_PKG.architecture()
-				#PKG_PATH = os.path.join(OUTPUT_PATH, PKG_NAME+"_"+PKG_DIST+"_"+PKG_ARCH)
 				PKG_PATH = OUTPUT_PATH
+				
+				# make directories if not exist
 				if not os.path.exists(PKG_PATH):
 	    				os.makedirs(PKG_PATH)
+	    				
+				# chane working directory to selected directory
 				os.chdir(PKG_PATH)
 	
 			
-				cmd = "dpkg -l " + PKG_NAME + " | grep '^ii' "
-				p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE);
-				path_output = p.stdout.read().strip().split('\n')[0].split()
-				dotdebname = path_output[1]+'_'+path_output[2]+'_'+path_output[3]
-				dotdebpath = PKG_PATH + '/' + dotdebname + '.deb'
+				# check package exists
+				dotdebpath = PKG_PATH + '/' + get_pkg_fullname(PKG_NAME) + '.deb'
 				if not os.path.exists(dotdebpath): # RePack if isnt packed already
-					for item in APT_PKG.candidate.dependencies:
-						for x in item:
-							cmd2 = "dpkg -l " + x.name + " | grep '^ii' "
-							p2 = subprocess.Popen(cmd2, shell=True, stdout=subprocess.PIPE);
-							path_output2 = p2.stdout.read().strip().split('\n')[0].split()
-							
-							if len(path_output2)>2:  
-								splitted = path_output2[1].split(':')
-								if len(splitted)>1:
-									path_output2[1] = splitted[0]
-									print("DPKG1:: explode (dependency) package name `%s`" % path_output2[1] )
-								
-								dotdebname2 = path_output2[1]+'_'+path_output2[2]+'_'+path_output2[3]
-								dotdebpath2 = PKG_PATH + '/' + dotdebname2 + '.deb'
-								if not os.path.exists(dotdebpath2):
-									DEPENDS.append(x.name)
-									print("DPKG1:: repacking (dependency) `%s` ..." % x.name )
-									os.system("fakeroot -u "+DPKG_REPACK+" "+x.name)
-								else:
-									print("DPKG1:: ignore repacking, already exist's `%s`" % x.name )
-								
 					print("DPKG1:: repacking `%s` ..." % PKG_NAME )
 					os.system("fakeroot -u "+DPKG_REPACK+" "+PKG_NAME)
 				else:
 					print("DPKG1:: ignore repacking, already exist's `%s`" % PKG_NAME )
 				
+
+				# parse dependencies
+				for item in get_dependencies(PKG_NAME):
+					if not item in DEPENDS:
+						DEPENDS.append(item)
+			
+				
+				
 			else:
 				print('DPKG1::ERROR:: `%s` Not installed' %  PKG_NAME)
+		
+		
+	
+		# repack dependenices
+		print('DPKG1:: Dependency processing ...')
+		for item in DEPENDS:
+			dotdebpath2 = PKG_PATH + '/' + get_pkg_fullname(item) + '.deb'
+			if not os.path.exists(dotdebpath2):
+				print("DPKG1:: repacking (dependency) `%s` ..." % item )
+				os.system("fakeroot -u " + DPKG_REPACK+" " + item)
+			else:
+				print("DPKG1:: ignore repacking, already exist's `%s`" % item )
+
 
 
 	#~~~ Make repository
@@ -105,4 +137,3 @@ try:
 
 except KeyboardInterrupt:
     print('Force exit, Keyboard interrupt!')
-

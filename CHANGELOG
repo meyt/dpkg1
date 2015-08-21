@@ -9,3 +9,14 @@
 - including dpkg-repack 
 - fix missing selected package to rebuild
 - add support for python 3.x
+
+0.2.0
+- change install method to local repository
+- add repository catalog creator command
+- fix package invalid file name
+
+0.3.0
+- add `debfoster` for full collecting dependencies
+- fix dependency packages invalid file name
+- speed up dependency packing on multiple package mode
+- [TEST] new successfully test from Elementary OS 0.3 Freya to Ubuntu 14.04.1 [i386]
